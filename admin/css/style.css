@@ -1,0 +1,185 @@
+/**
+ * Custom CSS for the Admin Dashboard (Updated & Fixed)
+ *
+ * This file contains the base layout styles for the sidebar navigation
+ * and the new, modern styles for the top navigation bar.
+ * The layout has been fixed to correctly position the sidebar and content.
+ */
+
+/* === Base Body & Font === */
+body { 
+    font-family: 'Poppins', sans-serif; 
+    background-color: #f8f9fa;
+}
+
+/* === Layout & Sidebar Structure (FIXED) === */
+/* The main container no longer needs flexbox as we use fixed positioning */
+#layoutSidenav { 
+    position: relative;
+    display: flex; /* Menggunakan flexbox untuk layout utama */
+}
+
+#layoutSidenav_nav { 
+    position: fixed; 
+    top: 56px; /* FIX: Position sidebar BELOW the top navbar */
+    left: 0; 
+    bottom: 0; 
+    width: 225px; 
+    z-index: 1030;
+    transition: transform 0.3s ease-in-out; 
+    background-color: #212529; 
+}
+
+#layoutSidenav_content { 
+    position: relative; 
+    /* FIX: Use margin to create space for the navbars */
+    margin-left: 225px;
+    margin-top: 56px;
+    padding: 1.5rem; /* Add some inner spacing for the content */
+    transition: margin-left 0.3s ease-in-out; 
+    width: calc(100% - 225px); /* Lebar konten menyesuaikan */
+}
+
+/* === Sidebar Toggled State (FIXED) === */
+/* This class is added by JavaScript to hide the sidebar */
+body.sb-sidenav-toggled #layoutSidenav_content { 
+    /* When sidebar is hidden, content expands to full width */
+    margin-left: 0;
+    width: 100%;
+}
+
+body.sb-sidenav-toggled #layoutSidenav_nav { 
+    /* The sidebar slides out of view */
+    transform: translateX(-225px); 
+}
+
+/* === Sidebar Menu Styling === */
+.sb-sidenav-menu {
+    /* No padding-top needed */
+}
+
+.sb-sidenav-menu .nav .nav-link { 
+    display: flex; 
+    align-items: center; 
+    padding: 0.75rem 1rem;
+    position: relative; 
+    color: rgba(255, 255, 255, 0.6); 
+    transition: color 0.2s, background-color 0.2s;
+}
+
+.sb-sidenav-menu .nav .nav-link:hover { 
+    color: #fff; 
+    background-color: rgba(255,255,255,0.05);
+}
+
+.sb-sidenav-menu .nav .nav-link.active { 
+    color: #fff; 
+    background-color: #0d6efd; 
+}
+
+.sb-sidenav-menu .nav .nav-link .sb-nav-link-icon { 
+    font-size: 1.1rem; 
+    margin-right: 0.75rem; 
+    width: 20px; 
+    text-align: center; 
+}
+
+.sb-sidenav-menu-heading { 
+    padding: 1.75rem 1rem 0.75rem; 
+    font-size: 0.75rem; 
+    font-weight: 600; 
+    color: rgba(255, 255, 255, 0.4); 
+    text-transform: uppercase; 
+}
+
+.sb-sidenav-footer { 
+    padding: 0.75rem; 
+    font-size: 0.8rem; 
+    text-align: center; 
+    color: rgba(255, 255, 255, 0.5); 
+    background-color: rgba(0, 0, 0, 0.2); 
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}
+
+
+/* === [UPDATED] Top Navigation Bar (FIXED) === */
+
+/* 1. Main navbar style: white background with shadow */
+.sb-topnav {
+    position: fixed; /* FIX: Use fixed positioning for consistency */
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1031; /* Ensure it's on top of the sidebar */
+    background-color: #ffffff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+    border-bottom: 1px solid #e9ecef;
+    height: 56px; 
+}
+
+/* 2. Adjust text and icon colors for the new background */
+.sb-topnav .navbar-brand,
+.sb-topnav #sidebarToggle,
+.sb-topnav .navbar-nav .nav-link {
+    color: #212529; /* Dark text for light background */
+}
+
+/* 3. Style the brand/logo */
+.sb-topnav .navbar-brand {
+    width: 225px;
+    margin: 0;
+    font-weight: 600;
+}
+
+.sb-topnav .navbar-brand .bi-water {
+    font-size: 1.5rem;
+    color: #0d6efd; /* Bootstrap primary blue */
+    vertical-align: middle;
+    transition: transform 0.3s ease;
+}
+
+.sb-topnav .navbar-brand:hover .bi-water {
+    transform: rotate(15deg) scale(1.1);
+}
+
+/* 4. Style the interactive buttons (toggle and user) */
+.sb-topnav #sidebarToggle,
+.sb-topnav .navbar-nav .nav-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%; /* Circular shape */
+    transition: background-color 0.2s ease-in-out;
+}
+
+.sb-topnav #sidebarToggle:hover,
+.sb-topnav .navbar-nav .nav-link:hover {
+    background-color: #e9ecef; /* Light grey background on hover */
+}
+
+.sb-topnav #sidebarToggle i,
+.sb-topnav .navbar-nav .nav-link i {
+    font-size: 1.25rem;
+}
+
+/* 5. Style the dropdown menu */
+.sb-topnav .dropdown-menu {
+    border: 1px solid #e9ecef;
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1);
+    border-radius: 0.5rem;
+    margin-top: 0.5rem !important;
+}
+
+.sb-topnav .dropdown-item {
+    padding: 0.5rem 1rem;
+    transition: background-color 0.2s;
+}
+
+.sb-topnav .dropdown-item:active {
+    background-color: #0d6efd;
+    color: #fff;
+}
