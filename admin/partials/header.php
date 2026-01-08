@@ -168,27 +168,49 @@ $current_page = basename($_SERVER['PHP_SELF']);
                         </a>
                         
                         <div class="sb-sidenav-menu-heading">Manajemen Data</div>
-                        <a class="nav-link <?= $current_page == 'kelola_pesanan.php' ? 'active' : '' ?>" href="kelola_pesanan.php">
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePesanan">
                             <div class="sb-nav-link-icon"><i class="bi bi-journal-text"></i></div>
                             Kelola Pesanan
+                            <div class="ms-auto"><i class="bi bi-chevron-down"></i></div>
                         </a>
+                        <div class="collapse" id="collapsePesanan">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link ps-4 <?= $current_page == 'pesanan_self_ordering.php' ? 'active' : '' ?>" href="pesanan_self_ordering.php">
+                                    Self Ordering
+                                </a>
+                                <a class="nav-link ps-4 <?= $current_page == 'pesanan_self_service.php' ? 'active' : '' ?>" href="pesanan_self_service.php">
+                                    Self Service
+                                </a>
+                            </nav>
+                        </div>
                         <a class="nav-link <?= $current_page == 'kelola_pelanggan.php' ? 'active' : '' ?>" href="kelola_pelanggan.php">
                             <div class="sb-nav-link-icon"><i class="bi bi-people-fill"></i></div>
                             Kelola Pelanggan
                         </a>
-                        <a class="nav-link <?= $current_page == 'kelola_layanan.php' ? 'active' : '' ?>" href="kelola_layanan.php">
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayanan">
                             <div class="sb-nav-link-icon"><i class="bi bi-tags-fill"></i></div>
                             Kelola Layanan
+                            <div class="ms-auto"><i class="bi bi-chevron-down"></i></div>
                         </a>
-                        <a class="nav-link <?= $current_page == 'laporan_pesanan.php' ? 'active' : '' ?>" href="laporan_pesanan.php">
-                            <div class="sb-nav-link-icon"><i class="bi bi-file-earmark-bar-graph-fill"></i></div>
+                        <div class="collapse" id="collapseLayanan">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link ps-4 <?= $current_page == 'layanan_self_ordering.php' ? 'active' : '' ?>" href="layanan_self_ordering.php">
+                                    Self Ordering
+                                </a>
+                                <a class="nav-link ps-4 <?= $current_page == 'layanan_self_service.php' ? 'active' : '' ?>" href="layanan_self_service.php">
+                                    Self Service
+                                </a>
+                            </nav>
+                        </div>
+                        <a class="nav-link <?= $current_page == 'laporan.php' ? 'active' : '' ?>" href="laporan.php">
+                            <div class="sb-nav-link-icon"><i class="bi bi-people-fill"></i></div>
                             Laporan
                         </a>
                     </div>
                 </div>
                 <div class="sb-sidenav-footer">
                     <div class="small">Logged in as:</div>
-                    <?= htmlspecialchars($_SESSION['admin_username'] ?? 'admin_user'); ?>
+                    <?= htmlspecialchars(isset($_SESSION['admin_username']) ? $_SESSION['admin_username'] : 'admin_user'); ?>
                    <!-- PERUBAHAN: Tombol logout memicu modal -->
                    <a class="btn btn-danger btn-sm w-100 mt-2" data-bs-toggle="modal" data-bs-target="#logoutModal">
                         <i class="bi bi-box-arrow-right"></i> Logout
