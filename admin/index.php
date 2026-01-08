@@ -23,9 +23,26 @@ $total_pelanggan = $result_pelanggan->fetch_assoc()['total'];
 
 // PERUBAHAN: Query pendapatan yang lebih akurat
 // Menjumlahkan total_biaya dari pesanan yang statusnya 'Selesai' atau 'Diambil'
-$query_pendapatan = "SELECT SUM(total_biaya) AS total FROM pesanan WHERE status_pesanan IN ('Selesai', 'Diambil')";
+$query_pendapatan = "
+    SELECT SUM(total) AS total_pendapatan
+    FROM (
+        SELECT total_biaya AS total
+        FROM pesanan
+        WHERE status_pesanan IN ('Selesai', 'Diambil')
+
+        UNION ALL
+
+        SELECT total_biaya AS total
+        FROM booking
+    ) AS gabungan
+";
+
 $result_pendapatan = $conn->query($query_pendapatan);
-$total_pendapatan = $result_pendapatan->fetch_assoc()['total'] ?? 0;
+$row = $result_pendapatan->fetch_assoc();
+
+$total_pendapatan = isset($row['total_pendapatan']) ? $row['total_pendapatan'] : 0;
+
+
 
 
 // --- Query untuk Pesanan Terbaru ---
