@@ -1,211 +1,161 @@
-<?php
-// Memulai sesi untuk mengelola data keranjang
-session_start();
-require_once 'config/database.php';
-
-// Ambil semua layanan dari database
-$query_layanan = "SELECT * FROM layanan";
-$result_layanan = $conn->query($query_layanan);
-
-// Ambil data keranjang dari sesi
-$keranjang = $_SESSION['keranjang'] ?? [];
-?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pilih Layanan Laundry</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Poppins', sans-serif; background-color: #f4f7f6; }
-        .navbar { background-color: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,.05); }
-        .service-card { border: 1px solid #e0e0e0; border-radius: 0.75rem; transition: all 0.3s ease; background-color: #fff; }
-        .service-card:hover { transform: translateY(-5px); box-shadow: 0 8px 16px rgba(0,0,0,.1); }
-        .service-card .card-body { text-align: center; }
-        .service-card .service-icon { font-size: 3rem; color: #0d6efd; }
-        .cart-container { background-color: #fff; border-radius: 0.75rem; padding: 1.5rem; }
-
-        /* PERUBAHAN: CSS untuk ikon tombol close */
-        .btn-close-arrow {
-            background: none !important;
-            position: relative;
-            font-size: 0.9rem; /* Menyesuaikan ukuran dasar agar ikon pas */
+    <title>Pilih Layanan Kios Modern</title>
+    <!-- Memuat Tailwind CSS dari CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Konfigurasi Tailwind untuk font Inter dan palet warna yang sama -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary': '#4F46E5', // Warna ungu utama
+                        'secondary': '#10B981', // Warna hijau sekunder
+                        'background': '#F9FAFB', // Latar belakang abu-abu sangat muda
+                    },
+                    boxShadow: {
+                        '3xl': '0 35px 60px -15px rgba(0, 0, 0, 0.3)',
+                        'kiosk': '0 25px 50px -12px rgba(79, 70, 229, 0.25)', // Bayangan khusus untuk kartu
+                    }
+                }
+            }
         }
-        .btn-close-arrow::before {
-            /* PERUBAHAN: Mengganti ikon panah kiri menjadi panah kanan */
-            content: '\F285'; /* Unicode untuk ikon chevron-right Bootstrap */
-            font-family: 'bootstrap-icons';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+    </script>
+    <style>
+        /* Gaya kustom untuk memastikan kartu terlihat bagus */
+        .service-card {
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 8px solid; /* Mengganti border-t-8 menjadi border-b-8 atau ditambahkan */
+        }
+
+        .service-card-primary {
+            border-color: #4F46E5;
+        }
+
+        .service-card-secondary {
+            border-color: #10B981;
+        }
+
+        .service-card:hover {
+            transform: translateY(-10px) scale(1.02); /* Efek lift yang lebih menonjol */
+            box-shadow: 0 40px 60px -15px rgba(0, 0, 0, 0.2); /* Bayangan yang lebih dramatis */
+        }
+        
+        .kiosk-button {
+             transition: background-color 0.3s, transform 0.1s;
+             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .kiosk-button:active {
+            transform: scale(0.98);
+        }
+
+        /* Responsif untuk layar sangat lebar (kiosk) */
+        @media (min-width: 1024px) {
+            .kiosk-container {
+                max-width: 1200px;
+                padding-top: 6rem;
+                padding-bottom: 6rem;
+            }
         }
     </style>
 </head>
-<body>
-    <!-- Navbar (REVISED) -->
-    <nav class="navbar navbar-expand-lg sticky-top">
-        <div class="container">
-            <span class="navbar-brand fw-bold"><i class="bi bi-water"></i> Pinang Laundry</span>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="index.php">Beranda</a></li>
-                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="layanan.php">Layanan</a></li>
-                </ul>
-                <button class="btn btn-primary ms-lg-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas" aria-controls="cartOffcanvas">
-                    <i class="bi bi-cart-fill me-1"></i> 
-                    Keranjang (<?= count($keranjang) ?>)
+<body class="bg-background font-sans min-h-screen flex items-center justify-center p-4">
+
+    <div class="kiosk-container w-full max-w-5xl mx-auto">
+
+        <!-- Header Utama yang Lebih Menonjol -->
+        <header class="text-center mb-16">
+            <div class="inline-block p-4 bg-primary text-white rounded-full mb-3 shadow-lg">
+                 <!-- Ikon Selamat Datang (Bintang) -->
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+            </div>
+            <h1 class="text-6xl font-extrabold text-gray-900 mb-4 tracking-tight">Pilih Kebutuhan Anda</h1>
+            <p class="text-2xl text-gray-500 font-light">Layanan serba mandiri, cepat, dan mudah.</p>
+        </header>
+
+        <!-- Area Pemilihan Layanan (Grid Responsif) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+
+            <!-- Pilihan 1: Self-Ordering (Pesan Sendiri) -->
+            <div id="selfOrderingCard" class="service-card service-card-primary bg-white p-10 rounded-2xl shadow-kiosk flex flex-col items-center text-center group">
+                <!-- Ikon Pemesanan yang lebih besar -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-primary mb-6 group-hover:text-indigo-600 transition duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <h2 class="text-4xl font-bold text-gray-900 mb-3">Self-Ordering</h2>
+                <p class="text-lg text-gray-500 mb-8 flex-grow">Akses menu lengkap dan lakukan pemesanan Anda secara mandiri dari awal hingga pembayaran.</p>
+                <button onclick="selectService('Self-Ordering')" class="kiosk-button w-full py-4 px-8 bg-primary text-white text-xl font-bold rounded-xl hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-primary focus:ring-opacity-50">
+                    Mulai Pesan Sekarang
+                </button>
+            </div>
+
+            <!-- Pilihan 2: Self-Service (Ambil Pesanan / Cek Status) -->
+            <div id="selfServiceCard" class="service-card service-card-secondary bg-white p-10 rounded-2xl shadow-kiosk flex flex-col items-center text-center group">
+                <!-- Ikon Layanan yang lebih besar -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-secondary mb-6 group-hover:text-emerald-600 transition duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h2 class="text-4xl font-bold text-gray-900 mb-3">Self-Service</h2>
+                <p class="text-lg text-gray-500 mb-8 flex-grow">Cek status pesanan, ambil nomor antrian, atau minta bantuan terkait pesanan yang sudah ada.</p>
+                <button onclick="selectService('Self-Service')" class="kiosk-button w-full py-4 px-8 bg-secondary text-white text-xl font-bold rounded-xl hover:bg-emerald-600 focus:outline-none focus:ring-4 focus:ring-secondary focus:ring-opacity-50">
+                    Cek Status & Layanan
+                </button>
+            </div>
+
+        </div>
+
+        <!-- Area Pesan (Modal/Pesan Kustom) - Dipertahankan untuk penggunaan di masa mendatang -->
+        <div id="messageBox" class="fixed inset-0 bg-gray-900 bg-opacity-80 backdrop-blur-sm hidden items-center justify-center p-4 z-50 transition-opacity duration-300">
+            <div class="bg-white p-8 rounded-xl shadow-2xl max-w-sm w-full text-center transform scale-100 transition-transform duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-primary mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944c2.816 0 5.518 1.05 7.618 2.944M3 12a9 9 0 0118 0M3 12h18" />
+                </svg>
+                <p id="messageText" class="text-xl font-semibold text-gray-800 mb-6">Pesan Anda di sini.</p>
+                <button onclick="closeMessage()" class="w-full py-3 bg-primary text-white font-medium rounded-lg hover:bg-indigo-700 transition duration-150 shadow-lg">
+                    Lanjutkan
                 </button>
             </div>
         </div>
-    </nav>
 
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col-lg-12">
-                <h2 class="mb-4 fw-bold">Pilih Layanan Anda</h2>
-                <div class="row g-4">
-                    <?php while($layanan = $result_layanan->fetch_assoc()): ?>
-                    <div class="col-md-6 col-lg-4">
-                        <div class="card service-card h-100">
-                            <div class="card-body p-4 d-flex flex-column">
-                                <i class="bi <?= htmlspecialchars($layanan['gambar_icon']) ?> service-icon mb-3"></i>
-                                <h5 class="card-title fw-bold"><?= htmlspecialchars($layanan['nama_layanan']) ?></h5>
-                                <p class="card-text text-muted small flex-grow-1"><?= htmlspecialchars($layanan['deskripsi']) ?></p>
-                                <div class="d-flex justify-content-around mt-3">
-                                    <div class="text-center">
-                                        <small class="text-muted">REGULER</small><br>
-                                        <strong>Rp<?= number_format($layanan['harga_reguler_kg'], 0, ',', '.') ?></strong>
-                                    </div>
-                                    <div class="text-center">
-                                        <small class="text-muted">EXPRESS</small><br>
-                                        <strong>Rp<?= number_format($layanan['harga_express_kg'], 0, ',', '.') ?></strong>
-                                    </div>
-                                </div>
-                                <button class="btn btn-outline-primary mt-4 w-100" data-bs-toggle="modal" data-bs-target="#addItemModal" data-id="<?= $layanan['id_layanan'] ?>" data-nama="<?= htmlspecialchars($layanan['nama_layanan']) ?>">
-                                    <i class="bi bi-plus-circle-fill me-2"></i>Tambah
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <?php endwhile; ?>
-                </div>
-            </div>
-        </div>
     </div>
 
-    <!-- BARU: Offcanvas untuk Keranjang Belanja -->
-    <div class="offcanvas offcanvas-end" tabindex="-1" id="cartOffcanvas" aria-labelledby="cartOffcanvasLabel">
-        <div class="offcanvas-header border-bottom">
-            <h5 class="offcanvas-title fw-bold" id="cartOffcanvasLabel">Keranjang Anda</h5>
-            <!-- PERUBAHAN: Tombol close sekarang menggunakan class custom untuk ikon panah kanan -->
-            <button type="button" class="btn-close btn-close-arrow" data-bs-dismiss="offcanvas" aria-label="Tutup"></button>
-        </div>
-        <div class="offcanvas-body">
-            <!-- Isi keranjang yang sebelumnya di sidebar, sekarang di sini -->
-            <?php if (empty($keranjang)): ?>
-                <p class="text-center text-muted mt-4">Keranjang masih kosong.</p>
-            <?php else: ?>
-                <ul class="list-group list-group-flush">
-                    <?php foreach ($keranjang as $item): ?>
-                    <li class="list-group-item px-0">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <strong class="d-block"><?= htmlspecialchars($item['nama_layanan']) ?></strong>
-                                <small class="text-muted"><?= count($item['detail_kantong']) ?> kantong</small> 
-                            </div>
-                            <form action="proses_keranjang.php" method="POST">
-                                <input type="hidden" name="action" value="delete">
-                                <input type="hidden" name="id_layanan" value="<?= $item['id_layanan'] ?>">
-                                <button type="submit" class="btn-close" aria-label="Hapus"></button>
-                            </form>
-                        </div>
-                        <?php foreach ($item['detail_kantong'] as $index => $kantong): ?>
-                            <small class="d-block text-muted ms-2">&bull; Kantong <?= $index + 1 ?>: <?= $kantong['tipe'] ?></small>
-                        <?php endforeach; ?>
-                    </li>
-                    <?php endforeach; ?>
-                </ul>
-                <div class="d-grid mt-4">
-                    <a href="checkout.php" class="btn btn-success btn-lg">Lanjut ke Checkout</a>
-                </div>
-                 <div class="d-grid mt-2">
-                    <form action="proses_keranjang.php" method="POST" class="mb-0">
-                        <input type="hidden" name="action" value="clear">
-                        <button type="submit" class="btn btn-outline-danger w-100">Kosongkan Keranjang</button>
-                    </form>
-                </div>
-            <?php endif; ?>
-        </div>
-    </div>
-
-    <!-- Modal Tambah Item (Tidak ada perubahan di sini) -->
-    <div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <form action="proses_keranjang.php" method="POST">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="addItemModalLabel">Tambah Layanan</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <input type="hidden" name="id_layanan" id="modal-id-layanan">
-                        <input type="hidden" name="action" value="add">
-                        <h4 id="modal-nama-layanan" class="fw-bold text-center mb-4"></h4>
-                        <div class="mb-3">
-                            <label for="jumlah_kantong" class="form-label">Jumlah Kantong</label>
-                            <input type="number" class="form-control" id="jumlah_kantong" name="jumlah_kantong" value="1" min="1" required>
-                        </div>
-                        <div id="kantong-options"></div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-primary">Tambah ke Keranjang</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const addItemModal = document.getElementById('addItemModal');
-            const jumlahKantongInput = document.getElementById('jumlah_kantong');
-            const kantongOptionsDiv = document.getElementById('kantong-options');
-
-            function generateKantongOptions(count) {
-                kantongOptionsDiv.innerHTML = '';
-                for (let i = 1; i <= count; i++) {
-                    const div = document.createElement('div');
-                    div.classList.add('mb-3', 'p-3', 'border', 'rounded');
-                    div.innerHTML = `<label class="form-label fw-bold">Kantong #${i}</label><select class="form-select" name="tipe_layanan[]" required><option value="Reguler">Reguler</option><option value="Express">Express</option></select>`;
-                    kantongOptionsDiv.appendChild(div);
-                }
+        // Fungsi untuk menangani pemilihan layanan
+        function selectService(serviceType) {
+            // Langsung arahkan pengguna berdasarkan jenis layanan
+            if (serviceType === 'Self-Ordering') {
+                window.location.href = 'selfordering.php';
+            } else if (serviceType === 'Self-Service') {
+                window.location.href = 'self-service.php';
             }
+            // Catatan: Logika messageBox (modal) dihilangkan
+            // agar pengguna langsung diarahkan ke halaman yang dituju sesuai permintaan.
+        }
 
-            addItemModal.addEventListener('show.bs.modal', function(event) {
-                const button = event.relatedTarget;
-                document.getElementById('modal-id-layanan').value = button.getAttribute('data-id');
-                document.getElementById('modal-nama-layanan').textContent = button.getAttribute('data-nama');
-                jumlahKantongInput.value = 1;
-                generateKantongOptions(1);
-            });
+        // Fungsi untuk menutup kotak pesan (masih dipertahankan, meskipun tidak dipanggil dari selectService)
+        function closeMessage() {
+            const messageBox = document.getElementById('messageBox');
+            messageBox.classList.remove('flex');
+            messageBox.classList.add('hidden');
+        }
 
-            jumlahKantongInput.addEventListener('input', function() {
-                const count = parseInt(this.value) || 0;
-                if (count > 0) {
-                    generateKantongOptions(count);
-                } else {
-                    kantongOptionsDiv.innerHTML = '';
-                }
-            });
+        // Pastikan kotak pesan dapat ditutup dengan klik di luar
+        document.getElementById('messageBox').addEventListener('click', function(event) {
+            if (event.target.id === 'messageBox') {
+                closeMessage();
+            }
         });
     </script>
 </body>
