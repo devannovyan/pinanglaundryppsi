@@ -6,8 +6,8 @@ require_once '../config/database.php';
 // REVISI: Logika Filter dikembalikan ke filter rentang tanggal
 // ===================================================================================
 
-$start_date = $_GET['start_date'] ?? '';
-$end_date = $_GET['end_date'] ?? '';
+$start_date = isset($_GET['start_date']) ? $_GET['start_date'] : '';
+$end_date = isset($_GET['end_date']) ? $_GET['end_date'] : '';
 
 $sql_where = "";
 $params = [];
@@ -23,12 +23,36 @@ if (!empty($start_date) && !empty($end_date)) {
 
 // --- Ambil Data Pesanan Sesuai Filter ---
 $query_laporan = "
-    SELECT p.kode_pesanan, p.tanggal_masuk, p.total_biaya, p.status_pesanan, pl.nama_pelanggan
-    FROM pesanan p
-    JOIN pelanggan pl ON p.id_pelanggan = pl.id_pelanggan
-    $sql_where
-    ORDER BY p.tanggal_masuk DESC
+
+-- ================= PESANAN =================
+SELECT 
+    p.kode_pesanan AS kode,
+    p.tanggal_masuk AS tanggal,
+    p.status_pesanan AS status,
+    p.total_biaya AS total,
+    pl.nama_pelanggan AS pelanggan,
+    'Pesanan' AS sumber
+FROM pesanan p
+JOIN pelanggan pl ON p.id_pelanggan = pl.id_pelanggan
+$sql_where
+
+UNION ALL
+
+-- ================= BOOKING =================
+SELECT 
+    b.kode_booking AS kode,
+    b.tanggal_masuk AS tanggal,
+    b.status_booking AS status,
+    b.total_biaya AS total,
+    pl.nama_pelanggan AS pelanggan,
+    'Booking' AS sumber
+FROM booking b
+JOIN pelanggan pl ON b.id_pelanggan = pl.id_pelanggan
+" . ($sql_where ? str_replace('p.', 'b.', $sql_where) : "") . "
+
+ORDER BY tanggal DESC
 ";
+
 
 $stmt = $conn->prepare($query_laporan);
 if (!empty($params)) {
@@ -42,7 +66,7 @@ $total_pendapatan = 0;
 $total_pesanan = $result_laporan->num_rows;
 $data_laporan = [];
 while($row = $result_laporan->fetch_assoc()){
-    $total_pendapatan += $row['total_biaya'];
+    $total_pendapatan += $row['total'];
     $data_laporan[] = $row;
 }
 $stmt->close();
@@ -152,11 +176,11 @@ $stmt->close();
                         <?php if ($total_pesanan > 0): ?>
                             <?php foreach($data_laporan as $row): ?>
                                 <tr>
-                                    <td><?= date('d M Y, H:i', strtotime($row['tanggal_masuk'])) ?></td>
-                                    <td><?= htmlspecialchars($row['kode_pesanan']) ?></td>
-                                    <td><?= htmlspecialchars($row['nama_pelanggan']) ?></td>
-                                    <td><?= htmlspecialchars($row['status_pesanan']) ?></td>
-                                    <td class="text-end">Rp<?= number_format($row['total_biaya'], 0, ',', '.') ?></td>
+                                    <td><?= date('d M Y, H:i', strtotime($row['tanggal'])) ?></td>
+                                    <td><?= htmlspecialchars($row['kode']) ?></td>
+                                    <td><?= htmlspecialchars($row['pelanggan']) ?></td>
+                                    <td><?= htmlspecialchars($row['status']) ?></td>
+                                    <td class="text-end">Rp<?= number_format($row['total'], 0, ',', '.') ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
